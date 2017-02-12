@@ -8,8 +8,6 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
-from _version import __version__
-
 this_dir = path.abspath(path.dirname(__file__))
 
 long_description = ''
@@ -18,7 +16,7 @@ with open(path.join(this_dir, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='utlz',
-    version=__version__,
+    version='0.4.1',
     description='A python utils library',
     long_description=long_description,
     url='https://github.com/theno/utlz',
