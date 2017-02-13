@@ -11,12 +11,16 @@ from os import path
 description = 'A python utils library'
 long_description = description
 this_dir = path.abspath(path.dirname(__file__))
+readme_md = path.join(this_dir, 'README.md')
+readme_rst = path.join(this_dir, 'README.rst')
 try:
     import pypandoc
-    long_description = pypandoc.convert(path.join(this_dir, 'README.md'), 'rst')
-except(IOError, ImportError):
-    with open(path.join(this_dir, 'README.md'), encoding='utf-8') as f:
-        long_description = f.read()
+    long_description = pypandoc.convert(readme_md, 'rst')
+    with open(readme_rst, 'w') as out:
+        out.write(long_description)
+except(IOError, ImportError, RuntimeError):
+    with open(readme_rst, encoding='utf-8') as in_:
+        long_description = in_.read()
 
 setup(
     name='utlz',
@@ -43,7 +47,4 @@ setup(
     ],
     keywords='python development utilities library',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    data_files=[
-        ('', ['README.md']),
-    ],
 )

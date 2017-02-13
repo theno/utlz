@@ -23,6 +23,8 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+# cf. https://stackoverflow.com/a/37841046
+README.rst
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
