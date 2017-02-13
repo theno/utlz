@@ -20,7 +20,7 @@ except(IOError, ImportError):
 
 setup(
     name='utlz',
-    version='0.4.2',
+    version='0.5.2',
     description=description,
     long_description=long_description,
     url='https://github.com/theno/utlz',

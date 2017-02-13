@@ -3,6 +3,7 @@ import inspect
 import os.path
 import shutil
 import sys
+import time
 from functools import wraps
 
 
@@ -109,28 +110,28 @@ def print_doc1(*args, **kwargs):
     (eg. ``@print_doc1(color=utils.red, bold=True, prefix=' ')``).
 
     Examples:
-        >>> @print_doc1
-        ... def foo():
-        ...     """First line of docstring.
-        ...
-        ...     another line.
-        ...     """
-        ...     pass
-        ...
-        >>> foo()
-        \033[34mFirst line of docstring\033[0m
+    #    >>> @print_doc1
+    #    ... def foo():
+    #    ...     """First line of docstring.
+    #    ...
+    #    ...     another line.
+    #    ...     """
+    #    ...     pass
+    #    ...
+    #    >>> foo()
+    #    \033[34mFirst line of docstring\033[0m
 
-        >>> @print_doc1
-        ... def foo():
-        ...     """First paragraph of docstring which contains more than one
-        ...     line.
-        ...
-        ...     Another paragraph.
-        ...     """
-        ...     pass
-        ...
-        >>> foo()
-        \033[34mFirst paragraph of docstring which contains more than one line\033[0m
+    #    >>> @print_doc1
+    #    ... def foo():
+    #    ...     """First paragraph of docstring which contains more than one
+    #    ...     line.
+    #    ...
+    #    ...     Another paragraph.
+    #    ...     """
+    #    ...     pass
+    #    ...
+    #    >>> foo()
+    #    \033[34mFirst paragraph of docstring which contains more than one line\033[0m
     '''
     # output settings from kwargs or take defaults
     color = kwargs.get('color', blue)
@@ -375,6 +376,41 @@ def namedtuple(typename, field_names, **kwargs):
                                     **kwargs)
     result.__new__.__defaults__ = tuple(defaults)
     return result
+
+
+# https://stackoverflow.com/a/15190306
+class timeout(object):
+    '''timeout context.
+
+    Usage example:
+        >>> with timeout(0.1) as t:
+        ...   while True:
+        ...     if t.timed_out:
+        ...       break
+        ...     print('.')
+        ...     time.sleep(0.02)
+        .
+        .
+        .
+        .
+        .
+
+    For more usage, see https://stackoverflow.com/a/15190306
+    '''
+
+    def __init__(self, seconds):
+        self.seconds = seconds
+
+    def __enter__(self):
+        self.die_after = time.time() + self.seconds
+        return self
+
+    def __exit__(self, type, value, traceback):
+        pass
+
+    @property
+    def timed_out(self):
+        return time.time() > self.die_after
 
 
 if __name__ == '__main__':
