@@ -8,22 +8,25 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
+description = 'A python utils library'
+long_description = description
 this_dir = path.abspath(path.dirname(__file__))
-
-long_description = ''
-with open(path.join(this_dir, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+try:
+    import pypandoc
+    long_description = pypandoc.convert(path.join(this_dir, 'README.md'), 'rst')
+except(IOError, ImportError):
+    with open(path.join(this_dir, 'README.md'), encoding='utf-8') as f:
+        long_description = f.read()
 
 setup(
     name='utlz',
-    version='0.4.1',
-    description='A python utils library',
+    version='0.4.2',
+    description=description,
     long_description=long_description,
     url='https://github.com/theno/utlz',
     author='Theodor Nolte',
     author_email='utlz@theno.eu',
     license='MIT',
-
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -40,4 +43,7 @@ setup(
     ],
     keywords='python development utilities library',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    data_files=[
+        ('', ['README.md']),
+    ],
 )
