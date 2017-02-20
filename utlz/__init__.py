@@ -357,6 +357,56 @@ def uncomment_or_update_or_append_line(filename, prefix, new_line, comment='#',
                               keep_backup=keep_backup, append=True)
 
 
+# idea comes from http://stackoverflow.com/a/13105359
+def convert_unicode_2_utf8(input):
+    '''Return a copy of `input` with every str component encoded from unicode to
+    utf-8.
+    '''
+    if isinstance(input, dict):
+        try:
+            # python-2.6
+            return dict((convert_unicode_2_utf8(key), convert_unicode_2_utf8(value))
+                        for key, value
+                        in input.iteritems())
+        except AttributeError:
+            # since python-2.7 cf. http://stackoverflow.com/a/1747827
+            # [the ugly eval('...') is required for a valid syntax on
+            # python-2.6, cf. http://stackoverflow.com/a/25049535]
+            return eval('''{convert_unicode_2_utf8(key): convert_unicode_2_utf8(value)
+                           for key, value
+                           in input.items()}''')
+    elif isinstance(input, list):
+        return [convert_unicode_2_utf8(element) for element in input]
+    # elif order relevant: python2 vs. python3
+    # cf. http://stackoverflow.com/a/19877309
+    elif isinstance(input, str):
+        return input
+    elif isinstance(input, unicode):
+        return input.encode('utf-8')
+    else:
+        return input
+
+
+def load_json(filename):
+    '''Return the json-file data, with all strings utf-8 encoded.'''
+    data = None
+    with open(filename, 'r') as fh:
+        data = json.load(fh)
+        data = convert_unicode_2_utf8(data)
+    return data
+
+
+def write_json(data, filename):
+    '''Write the python data structure as a json-Object to filename.'''
+    with open(filename, 'w') as fh:
+        json.dump(obj=data, fp=fh, sort_keys=True)
+
+
+def flat_list(list_of_lists):
+    '''Return a simple list out of a list of lists.'''
+    return [item for sublist in list_of_lists for item in sublist]
+
+
 # namedtuple with defaults
 def namedtuple(typename, field_names, **kwargs):
     if isinstance(field_names, str):

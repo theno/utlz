@@ -13,3 +13,7 @@ def test_flo():
 
     very_long = '{foo}.{bar}.{baz}'.format(foo=foo, bar=bar, baz=baz)
     assert utlz.flo('{foo}.{bar}.{baz}') == very_long
+
+
+def test_flat_list():
+    assert utlz.flat_list([[1, 2], [3, 4, 5], [6]]) == [1, 2, 3, 4, 5, 6]
