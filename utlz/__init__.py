@@ -381,9 +381,13 @@ def convert_unicode_2_utf8(input):
     # cf. http://stackoverflow.com/a/19877309
     elif isinstance(input, str):
         return input
-    elif isinstance(input, unicode):
-        return input.encode('utf-8')
     else:
+        try:
+            if eval('''isinstance(input, unicode)'''):
+                return input.encode('utf-8')
+        except NameError:
+            # unicode does not exist in python-3.x
+            pass
         return input
 
 
