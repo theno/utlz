@@ -72,14 +72,16 @@ def test_lazy_val():
         def bar(self):
             return 'foo ' + str(self.attr)
 
-    clas = TestClass(111)
+    inst1 = TestClass(111)
     assert func1.calls == 0
-    assert clas.double == 222
+    assert inst1.double == 222
     assert func1.calls == 1
-    assert clas.double == 222
+    assert inst1.double == 222
     assert func1.calls == 1, 'func1.calls is still 1'
-    assert clas.bar == 'foo 111'
-    assert clas.baz == 'baz 111'
+    assert inst1.bar == 'foo 111'
+    assert inst1.baz == 'baz 111'
+    inst2 = TestClass(333)
+    assert inst2.baz == 'baz 333'
 
 
 def test_namedtuple():
@@ -110,6 +112,8 @@ def test_namedtuple():
             'bar_as_str': lambda self: str(self.bar),
         }
     )
-    lazy1 = WithLazyVals('Hello, World!')
-    assert lazy1.foo_upper == 'HELLO, WORLD!'
-    assert lazy1.bar_as_str == '22'
+    wlv1 = WithLazyVals('Hello, World!')
+    assert wlv1.bar_as_str == '22'
+    assert wlv1.foo_upper == 'HELLO, WORLD!'
+    wlv2 = WithLazyVals('asdf')
+    assert wlv2.foo_upper == 'ASDF'

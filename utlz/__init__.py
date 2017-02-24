@@ -452,22 +452,22 @@ def func_has_arg(func, arg):
 
 # originally written by Giampaolo Rodolà and Ken Seehof
 # https://code.activestate.com/recipes/576563-cached-property/#c3
-def lazy_val(func):
+def lazy_val(func, key=lambda *args: args[0]):
     '''A memoize decorator for class properties.
 
-    Return a cached property that is calculated by function `func` at first
+    Return a cached property that is calculated by function `func` on first
     access.
     '''
 
     @functools.wraps(func)
     def get(self):
         try:
-            return self._cache[func]
+            return self._cache[key(func, self)]
         except AttributeError:
             self._cache = {}
         except KeyError:
             pass
-        val = self._cache[func] = func(self)
+        val = self._cache[key(func, self)] = func(self)
         return val
 
     return property(get)
@@ -488,14 +488,21 @@ def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
         elif len(defaults) != 0:
             raise ValueError('non-keyword arg after keyword arg in field_names')
         field_names_without_defaults.append(name)
-    result = collections.namedtuple(typename, field_names_without_defaults,
+    _class = collections.namedtuple(typename, field_names_without_defaults,
                                     **kwargs)
-    result.__new__.__defaults__ = tuple(defaults)
+    _class.__new__.__defaults__ = tuple(defaults)
     if lazy_vals is not None:
-        result._cache = {}
+        # namedtuple instances are tuples and so they are immutable.  We cannot
+        # add an instance property _cache.  So we create one global _cache dict
+        # as a class property for storing the lazy vals and use as a key a
+        # combination of the identities of self and the func.
+        _class._cache = {}
         for attr_name, func in lazy_vals.items():
-            setattr(result, attr_name, lazy_val(func))
-    return result
+            setattr(_class, attr_name,
+                    lazy_val(func, key=lambda *args: ''.join([str(id(arg))
+                                                              for arg
+                                                              in args])))
+    return _class
 
 
 # TODO unit test
