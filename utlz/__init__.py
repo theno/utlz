@@ -21,11 +21,13 @@ def flo(string):
 
 
 # does not work if called from another package (with other globals)
+# TODO: unit tests
 def doc1():
     '''Return the first line of the (callers) docstring.'''
     return globals()[inspect.stack()[1][3]].__doc__.splitlines()[0]
 
 
+# TODO: unit tests
 def _wrap_with(color_code):
     '''Color wrapper.
 
@@ -54,6 +56,7 @@ white = _wrap_with('37')
 default_color = _wrap_with('0')
 
 
+# TODO: unit tests
 def first_paragraph(multiline_str, without_trailing_dot=True, maxlength=None):
     '''Return first paragraph of multiline_str as a oneliner.
 
@@ -100,6 +103,7 @@ def first_paragraph(multiline_str, without_trailing_dot=True, maxlength=None):
 
 
 # for decorator with arguments see: http://stackoverflow.com/a/5929165
+# TODO: unit tests
 def print_doc1(*args, **kwargs):
     '''Print the first paragraph of the docstring of the decorated function.
 
@@ -162,6 +166,7 @@ def print_doc1(*args, **kwargs):
     return real_decorator
 
 
+# TODO: unit tests
 def print_full_name(*args, **kwargs):
     '''Decorator, print the full name of the decorated function.
 
@@ -197,6 +202,7 @@ def print_full_name(*args, **kwargs):
 
 
 # taken from: http://stackoverflow.com/a/3041990
+# TODO: unit tests
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
 
@@ -230,6 +236,7 @@ def query_yes_no(question, default="yes"):
                              "(or 'y' or 'n').\n")
 
 
+# TODO: unit tests
 def query_input(question, default=None, color=default_color):
     """Ask a question for input via raw_input() and return their answer.
 
@@ -254,6 +261,7 @@ def query_input(question, default=None, color=default_color):
             return choice
 
 
+# TODO: unit tests
 def filled_out_template_str(template, **substitutions):
     '''Return str template with applied substitutions.
 
@@ -282,6 +290,7 @@ def filled_out_template_str(template, **substitutions):
     return template
 
 
+# TODO: unit tests
 def filled_out_template(filename, **substitutions):
     '''Return content of file filename with applied substitutions.'''
     res = None
@@ -292,6 +301,7 @@ def filled_out_template(filename, **substitutions):
 
 
 # cf. http://stackoverflow.com/a/126389
+# TODO: unit tests
 def update_or_append_line(filename, prefix, new_line, keep_backup=True,
                           append=True):
     '''Search in file 'filename' for a line starting with 'prefix' and replace
@@ -331,6 +341,7 @@ def update_or_append_line(filename, prefix, new_line, keep_backup=True,
     return same_line_exists or line_updated
 
 
+# TODO: unit tests
 def comment_out_line(filename, line, comment='#',
                      update_or_append_line=update_or_append_line):
     '''Comment line out by putting a comment sign in front of the line.
@@ -342,6 +353,7 @@ def comment_out_line(filename, line, comment='#',
                           append=False)
 
 
+# TODO: unit tests
 def uncomment_or_update_or_append_line(filename, prefix, new_line, comment='#',
                                        keep_backup=True,
                                        update_or_append_line=update_or_append_line):
@@ -358,6 +370,7 @@ def uncomment_or_update_or_append_line(filename, prefix, new_line, comment='#',
 
 
 # idea comes from http://stackoverflow.com/a/13105359
+# TODO: unit tests
 def convert_unicode_2_utf8(input):
     '''Return a copy of `input` with every str component encoded from unicode to
     utf-8.
@@ -391,6 +404,7 @@ def convert_unicode_2_utf8(input):
         return input
 
 
+# TODO: unit tests
 def load_json(filename):
     '''Return the json-file data, with all strings utf-8 encoded.'''
     data = None
@@ -400,6 +414,7 @@ def load_json(filename):
     return data
 
 
+# TODO: unit tests
 def write_json(data, filename):
     '''Write the python data structure as a json-Object to filename.'''
     with open(filename, 'w') as fh:
@@ -412,6 +427,7 @@ def flat_list(list_of_lists):
 
 
 # namedtuple with defaults
+# TODO: unit tests
 def namedtuple(typename, field_names, **kwargs):
     if isinstance(field_names, str):
         field_names = field_names.replace(',', ' ').split()
@@ -424,7 +440,7 @@ def namedtuple(typename, field_names, **kwargs):
             name, default = list_
             defaults.append(eval(default))
         elif len(defaults) != 0:
-            raise ValueError('non-keyword arg after keyword arg')
+            raise ValueError('non-keyword arg after keyword arg in field_names')
         field_names_without_defaults.append(name)
     result = collections.namedtuple(typename, field_names_without_defaults,
                                     **kwargs)
@@ -432,7 +448,31 @@ def namedtuple(typename, field_names, **kwargs):
     return result
 
 
+def text_with_newlines(text, line_length=78, newline='\n'):
+    '''Return text with a `newline` inserted after each `line_length` char.
+
+    Return `text` unchanged if line_length == 0.
+    '''
+    if line_length > 0:
+        if len(text) <= line_length:
+            return text
+        else:
+            return text[:line_length] + newline + \
+                   text_with_newlines(text[line_length:], line_length, newline)
+    else:
+        return text
+
+
+def func_has_arg(func, arg):
+    '''Return True if an argument `arg` exists for function `func`, else False.
+    '''
+    return arg in inspect.getargspec(func).args
+
+
+
+
 # https://stackoverflow.com/a/15190306
+# TODO: unit tests
 class timeout(object):
     '''timeout context.
 
