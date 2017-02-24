@@ -4,22 +4,25 @@
 * https://pypi.python.org/pypi/utlz
 """
 
+import os
 from setuptools import setup, find_packages
 from codecs import open
-from os import path
 
 description = 'A python utils library'
 long_description = description
-this_dir = path.abspath(path.dirname(__file__))
-readme_md = path.join(this_dir, 'README.md')
-readme_rst = path.join(this_dir, 'README.rst')
+this_dir = os.path.abspath(os.path.dirname(__file__))
+readme_md = os.path.join(this_dir, 'README.md')
+readme_rst = os.path.join(this_dir, 'README.rst')
+readme = os.path.join(this_dir, 'README')
 try:
     import pypandoc
     long_description = pypandoc.convert(readme_md, 'rst')
     with open(readme_rst, 'w') as out:
         out.write(long_description)
 except(IOError, ImportError, RuntimeError):
-    with open(readme_rst, encoding='utf-8') as in_:
+    if not os.path.isfile(readme):
+        os.symlink('README.md', readme)
+    with open(readme, encoding='utf-8') as in_:
         long_description = in_.read()
 
 setup(
