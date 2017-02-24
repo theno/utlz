@@ -476,7 +476,7 @@ def lazy_val(func):
 
 # namedtuple with defaults
 # TODO: unit test
-def namedtuple(typename, field_names, **kwargs):
+def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
     if isinstance(field_names, str):
         field_names = field_names.replace(',', ' ').split()
     field_names = list(map(str, field_names))
@@ -493,6 +493,10 @@ def namedtuple(typename, field_names, **kwargs):
     result = collections.namedtuple(typename, field_names_without_defaults,
                                     **kwargs)
     result.__new__.__defaults__ = tuple(defaults)
+    if lazy_vals is not None:
+        result._cache = {}
+        for attr_name, func in lazy_vals.items():
+            setattr(result, attr_name, lazy_val(func))
     return result
 
 

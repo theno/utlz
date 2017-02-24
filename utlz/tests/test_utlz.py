@@ -48,3 +48,69 @@ def test_func_has_arg():
     assert utlz.func_has_arg(func=Class1.__init__, arg='self') is True
     assert utlz.func_has_arg(func=Class1.__init__, arg='bar') is True
     assert utlz.func_has_arg(func=Class1.__init__, arg='baz') is False
+
+
+def test_lazy_val():
+
+    def func1(arg):
+        func1.calls += 1
+        return arg.attr + arg.attr
+    func1.calls = 0
+
+    class TestClass:
+
+        baz = utlz.lazy_val(lambda self: 'baz ' + str(self.attr))
+
+        def __init__(self, arg):
+            self.attr = arg
+
+        @utlz.lazy_val
+        def double(self):
+            return func1(self)
+
+        @utlz.lazy_val
+        def bar(self):
+            return 'foo ' + str(self.attr)
+
+    clas = TestClass(111)
+    assert func1.calls == 0
+    assert clas.double == 222
+    assert func1.calls == 1
+    assert clas.double == 222
+    assert func1.calls == 1, 'func1.calls is still 1'
+    assert clas.bar == 'foo 111'
+    assert clas.baz == 'baz 111'
+
+
+
+def test_namedtuple():
+    SimpleTuple = utlz.namedtuple(
+        typename='SimpleTuple',
+        field_names='foo, bar, baz'
+    )
+    st1 = SimpleTuple(1, 2, 3)
+    assert st1.foo == 1 and st1.bar == 2 and st1.baz == 3
+    assert st1[0] == 1 and st1[1] == 2 and st1[2] == 3
+    st2 = SimpleTuple(baz='ccc', bar='bbb', foo='aaa')
+    assert st2.foo == 'aaa' and st2.bar == 'bbb' and st2.baz == 'ccc'
+
+    WithDefaults = utlz.namedtuple(
+        typename='WithDefaults',
+        field_names='foo, bar=222, baz=None, bla="hihi"'
+    )
+    wd1 = WithDefaults('hoho')
+    assert str(wd1) == "WithDefaults(foo='hoho', bar=222, baz=None, bla='hihi')"
+    wd2 = WithDefaults(baz=True, foo='111')
+    assert wd2.baz is True and wd2[0] == '111'
+
+    WithLazyVals = utlz.namedtuple(
+        typename='WithLazyVals',
+        field_names='foo, bar=22',
+        lazy_vals={
+            'foo_upper': lambda self: self.foo.upper(),
+            'bar_as_str': lambda self: str(self.bar),
+        }
+    )
+    lazy1 = WithLazyVals('Hello, World!')
+    assert lazy1.foo_upper == 'HELLO, WORLD!'
+    assert lazy1.bar_as_str == '22'
