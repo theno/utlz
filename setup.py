@@ -5,25 +5,36 @@
 """
 
 import os
+import shutil
 from setuptools import setup, find_packages
 from codecs import open
 
+
+def create_readme_with_long_description():
+    this_dir = os.path.abspath(os.path.dirname(__file__))
+    readme_md = os.path.join(this_dir, 'README.md')
+    readme = os.path.join(this_dir, 'README')
+    if os.path.isfile(readme_md):
+        if os.path.islink(readme):
+            os.remove(readme)
+        shutil.copy(readme_md, readme)
+    try:
+        import pypandoc
+        long_description = pypandoc.convert(readme_md, 'rst')
+        if os.path.islink(readme):
+            os.remove(readme)
+        with open(readme, 'w') as out:
+            out.write(long_description)
+    except(IOError, ImportError, RuntimeError):
+        if os.path.isfile(readme_md):
+            os.remove(readme)
+            os.symlink(readme_md, readme)
+        with open(readme, encoding='utf-8') as in_:
+            long_description = in_.read()
+    return long_description
+
 description = 'A python utils library'
-long_description = description
-this_dir = os.path.abspath(os.path.dirname(__file__))
-readme_md = os.path.join(this_dir, 'README.md')
-readme_rst = os.path.join(this_dir, 'README.rst')
-readme = os.path.join(this_dir, 'README')
-try:
-    import pypandoc
-    long_description = pypandoc.convert(readme_md, 'rst')
-    with open(readme_rst, 'w') as out:
-        out.write(long_description)
-except(IOError, ImportError, RuntimeError):
-    if not os.path.isfile(readme):
-        os.symlink('README.md', readme)
-    with open(readme, encoding='utf-8') as in_:
-        long_description = in_.read()
+long_description = create_readme_with_long_description()
 
 setup(
     name='utlz',
