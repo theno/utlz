@@ -1,8 +1,10 @@
 import collections
+import functools
 import inspect
 import os.path
 import shutil
 import sys
+import struct
 import time
 from functools import wraps
 
@@ -426,28 +428,6 @@ def flat_list(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
 
 
-# namedtuple with defaults
-# TODO: unit tests
-def namedtuple(typename, field_names, **kwargs):
-    if isinstance(field_names, str):
-        field_names = field_names.replace(',', ' ').split()
-    field_names = list(map(str, field_names))
-    field_names_without_defaults = []
-    defaults = []
-    for name in field_names:
-        list_ = name.split('=', 1)
-        if len(list_) > 1:
-            name, default = list_
-            defaults.append(eval(default))
-        elif len(defaults) != 0:
-            raise ValueError('non-keyword arg after keyword arg in field_names')
-        field_names_without_defaults.append(name)
-    result = collections.namedtuple(typename, field_names_without_defaults,
-                                    **kwargs)
-    result.__new__.__defaults__ = tuple(defaults)
-    return result
-
-
 def text_with_newlines(text, line_length=78, newline='\n'):
     '''Return text with a `newline` inserted after each `line_length` char.
 
@@ -469,6 +449,82 @@ def func_has_arg(func, arg):
     return arg in inspect.getargspec(func).args
 
 
+# originally written by Giampaolo Rodolà and Ken Seehof
+# https://code.activestate.com/recipes/576563-cached-property/#c3
+# TODO unit test
+def lazy_val(func):
+    '''A memoize decorator for class properties.
+
+    Return a cached property that is calculated by function `func` at first
+    access.
+    '''
+
+    @functools.wraps(func)
+    def get(self):
+        try:
+            return self._cache[func]
+        except AttributeError:
+            self._cache = {}
+        except KeyError:
+            pass
+        val = self._cache[func] = func(self)
+        return val
+
+    return property(get)
+
+
+# namedtuple with defaults
+# TODO: unit test
+def namedtuple(typename, field_names, **kwargs):
+    if isinstance(field_names, str):
+        field_names = field_names.replace(',', ' ').split()
+    field_names = list(map(str, field_names))
+    field_names_without_defaults = []
+    defaults = []
+    for name in field_names:
+        list_ = name.split('=', 1)
+        if len(list_) > 1:
+            name, default = list_
+            defaults.append(eval(default))
+        elif len(defaults) != 0:
+            raise ValueError('non-keyword arg after keyword arg in field_names')
+        field_names_without_defaults.append(name)
+    result = collections.namedtuple(typename, field_names_without_defaults,
+                                    **kwargs)
+    result.__new__.__defaults__ = tuple(defaults)
+    return result
+
+
+# TODO unit test
+class StructContext(object):
+    '''An instance of this is a file like object which enables access of an
+    (data) struct.
+    '''
+
+    def __init__(self, data_struct):
+        self.data_struct = data_struct
+        self.offset = 0
+
+    def __enter__(self):
+        self.seek(0)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.seek(0)
+
+    def seek(self, offset):
+        self.offset = offset
+
+    def read(self, fmt):
+        data = struct.unpack_from(fmt, self.data_struct, self.offset)
+        self.offset += struct.calcsize(fmt)
+        if len(data) == 1:
+            return data[0]
+        return data
+
+    @lazy_val
+    def length(self):
+        return len(self.data_struct)
 
 
 # https://stackoverflow.com/a/15190306
