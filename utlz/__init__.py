@@ -452,7 +452,6 @@ def func_has_arg(func, arg):
 
 # originally written by Giampaolo Rodolà and Ken Seehof
 # https://code.activestate.com/recipes/576563-cached-property/#c3
-# TODO unit test
 def lazy_val(func):
     '''A memoize decorator for class properties.
 
@@ -474,8 +473,7 @@ def lazy_val(func):
     return property(get)
 
 
-# namedtuple with defaults
-# TODO: unit test
+# namedtuple with defaults and lazy_vals
 def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
     if isinstance(field_names, str):
         field_names = field_names.replace(',', ' ').split()

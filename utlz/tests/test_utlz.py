@@ -82,7 +82,6 @@ def test_lazy_val():
     assert clas.baz == 'baz 111'
 
 
-
 def test_namedtuple():
     SimpleTuple = utlz.namedtuple(
         typename='SimpleTuple',
