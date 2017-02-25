@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import collections
 import functools
+import json
 import inspect
 import os.path
 import shutil
@@ -407,7 +408,6 @@ def convert_unicode_2_utf8(input):
         return input
 
 
-# TODO: unit tests
 def load_json(filename):
     '''Return the json-file data, with all strings utf-8 encoded.'''
     data = None
@@ -417,7 +417,6 @@ def load_json(filename):
     return data
 
 
-# TODO: unit tests
 def write_json(data, filename):
     '''Write the python data structure as a json-Object to filename.'''
     with open(filename, 'w') as fh:

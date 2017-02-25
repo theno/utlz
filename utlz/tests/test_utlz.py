@@ -1,3 +1,6 @@
+from os.path import join, dirname
+from tempfile import NamedTemporaryFile
+
 import utlz
 
 
@@ -13,6 +16,37 @@ def test_flo():
 
     very_long = '{foo}.{bar}.{baz}'.format(foo=foo, bar=bar, baz=baz)
     assert utlz.flo('{foo}.{bar}.{baz}') == very_long
+
+
+def test_load_json():
+    filename = join(dirname(__file__), 'test_data', 'data.json')
+    data_is = utlz.load_json(filename)
+    data_must = ['aa', {'a': {'k1': [1, 2, 3], 'k2': 'value'}, 'b': 'bbb'}, 333]
+    assert data_is == data_must
+
+
+def test_write_json():
+    test_data = [  # (<data_in>, <data_must>, <from_file_must>), ...
+        (
+            ['aa', {'a': {'k1': [1, 2, 3], 'k2': 'val'}, 'b': 'bbb'}, 333],
+            ['aa', {'a': {'k1': [1, 2, 3], 'k2': 'val'}, 'b': 'bbb'}, 333],
+            '["aa", {"a": {"k1": [1, 2, 3], "k2": "val"}, "b": "bbb"}, 333]',
+        ),
+        (
+            ['aa', {'a': {'k2': 'val', 'k1': [1, 2, 3]}, 'b': 'bbb'}, 333],
+            ['aa', {'a': {'k1': [1, 2, 3], 'k2': 'val'}, 'b': 'bbb'}, 333],
+            '["aa", {"a": {"k1": [1, 2, 3], "k2": "val"}, "b": "bbb"}, 333]',
+        ),
+    ]
+    for data_in, data_must, from_file_must in test_data:
+        with NamedTemporaryFile() as tmpf:
+            utlz.write_json(data_in, tmpf.name)
+            tmpf.seek(0)
+            data_is = utlz.load_json(tmpf.name)
+            tmpf.seek(0)
+            from_file = tmpf.read().decode('utf-8')
+            assert data_is == data_must
+            assert from_file == from_file_must
 
 
 def test_flat_list():
