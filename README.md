@@ -38,3 +38,21 @@ pyenv local  system  2.6.9  2.7.13  3.3.6  3.4.6  3.5.3  3.6.0
 # build and run tests
 python -m tox
 ```
+
+Build and publish package:
+```bash
+# install pypandoc and twine
+pip install  pypandoc  twine
+
+# build package
+python setup.py sdist
+
+# upload to pypi.org
+twine  upload  dist/utlz-<VERSION>.tar.gz
+
+
+# usefull oneliners
+rm -rf .tox/; python3.6 -m tox
+rm -rf dist/; python3.6 setup.py sdist; ls -hal dist/
+python3.6 -m twine  upload  dist/utlz*
+```
