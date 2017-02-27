@@ -1,3 +1,4 @@
+import random
 from os.path import join, dirname
 from tempfile import NamedTemporaryFile
 
@@ -151,3 +152,38 @@ def test_namedtuple():
     assert wlv1.foo_upper == 'HELLO, WORLD!'
     wlv2 = WithLazyVals('asdf')
     assert wlv2.foo_upper == 'ASDF'
+
+
+def test_namedtuple_lazy_val():
+    tail_a = str(random.randint(0, 100))
+    tail_b = str(random.randint(0, 100))
+    tail_c = str(random.randint(0, 100))
+    Tuple = utlz.namedtuple(
+        typename='Tuple',
+        field_names=[
+            'a',
+            'b',
+            'c',
+        ],
+        lazy_vals={
+            'a_lazy': lambda self: self.a + tail_a,
+            'b_lazy': lambda self: self.b + tail_b,
+            'c_lazy': lambda self: self.c + tail_c,
+        }
+    )
+    for i in range(10):
+        tupels = []
+        for j in range(10):
+            tup = Tuple(
+                a=str(random.randint(0, 1000)),
+                b=str(random.randint(0, 1000)),
+                c=str(random.randint(0, 1000))
+            )
+            assert tup.a + tail_a == tup.a_lazy
+            assert tup.b + tail_b == tup.b_lazy
+            assert tup.c + tail_c == tup.c_lazy
+            tupels.append(tup)
+        for tup in tupels:
+            assert tup.a + tail_a == tup.a_lazy
+            assert tup.b + tail_b == tup.b_lazy
+            assert tup.c + tail_c == tup.c_lazy

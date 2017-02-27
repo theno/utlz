@@ -451,22 +451,48 @@ def func_has_arg(func, arg):
 
 # originally written by Giampaolo Rodolà and Ken Seehof
 # https://code.activestate.com/recipes/576563-cached-property/#c3
-def lazy_val(func, key=lambda *args: args[0]):
+def lazy_val(func, with_del_hook=False):
     '''A memoize decorator for class properties.
 
     Return a cached property that is calculated by function `func` on first
     access.
     '''
 
+    def hook_for(that):
+
+        def do_nothing(*args, **kwargs): pass
+
+        try:
+            orig_del = that.__del__
+        except AttributeError:
+            orig_del = do_nothing
+
+        def del_hook(*args, **kwargs):
+            del that._cache[id(that)]
+            del that._del_hook_cache[id(that)]
+            orig_del(that, *args, **kwargs)
+
+        try:
+            that.__del__ = del_hook
+        except AttributeError:
+            orig_del = do_nothing
+
+        return del_hook
+
     @functools.wraps(func)
     def get(self):
         try:
-            return self._cache[key(func, self)]
+            return self._cache[id(self)][id(func)]
         except AttributeError:
-            self._cache = {}
+            self._cache = {id(self): {}, }
         except KeyError:
-            pass
-        val = self._cache[key(func, self)] = func(self)
+            try:
+                self._cache[id(self)]
+            except KeyError:
+                self._cache[id(self)] = {}
+                if with_del_hook:
+                    self._del_hook_cache[id(self)] = hook_for(self)
+        val = self._cache[id(self)][id(func)] = func(self)
         return val
 
     return property(get)
@@ -493,14 +519,15 @@ def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
     if lazy_vals is not None:
         # namedtuple instances are tuples and so they are immutable.  We cannot
         # add an instance property _cache.  So we create one global _cache dict
-        # as a class property for storing the lazy vals and use as a key a
-        # combination of the identities of self and the func.
+        # and one _del_hook_cache dict as a class properties for storing the
+        # lazy vals and the del-hooks and enable the del_hook-functionality
+        # by adding a __del__ attribute function wich calls the del-hook.
         _class._cache = {}
+        _class._del_hook_cache = {}
+        _class.__del__ = lambda self: self._del_hook_cache[id(self)]()
         for attr_name, func in lazy_vals.items():
             setattr(_class, attr_name,
-                    lazy_val(func, key=lambda *args: ''.join([str(id(arg))
-                                                              for arg
-                                                              in args])))
+                    lazy_val(func, with_del_hook=True))
     return _class
 
 
