@@ -459,40 +459,48 @@ def lazy_val(func, with_del_hook=False):
     '''
 
     def hook_for(that):
-
-        def do_nothing(*args, **kwargs): pass
-
         try:
             orig_del = that.__del__
         except AttributeError:
-            orig_del = do_nothing
+            orig_del = None
 
         def del_hook(*args, **kwargs):
-            del that._cache[id(that)]
-            del that._del_hook_cache[id(that)]
-            orig_del(that, *args, **kwargs)
+            del that._cache[that]
+            del that._del_hook_cache[that]
+            if orig_del is not None:
+                orig_del(that, *args, **kwargs)
 
         try:
-            that.__del__ = del_hook
+            if orig_del is not None:
+                that.__del__ = del_hook
         except AttributeError:
-            orig_del = do_nothing
-
+            # that.__del__ is a class property and cannot be changed by instance
+            orig_del = None
         return del_hook
+
+    def add_to_del_hook_cache(that):
+        if with_del_hook:
+            try:
+                that._del_hook_cache[that] = hook_for(that)
+            except AttributeError:
+                # when that._del_hook_cache not exists, it means it is not a
+                # class property.  Then, we don't need a del_hook().
+                pass
 
     @functools.wraps(func)
     def get(self):
         try:
-            return self._cache[id(self)][id(func)]
+            return self._cache[self][func]
         except AttributeError:
-            self._cache = {id(self): {}, }
+            self._cache = {self: {}, }
+            add_to_del_hook_cache(self)
         except KeyError:
             try:
-                self._cache[id(self)]
+                self._cache[self]
             except KeyError:
-                self._cache[id(self)] = {}
-                if with_del_hook:
-                    self._del_hook_cache[id(self)] = hook_for(self)
-        val = self._cache[id(self)][id(func)] = func(self)
+                self._cache[self] = {}
+                add_to_del_hook_cache(self)
+        val = self._cache[self][func] = func(self)
         return val
 
     return property(get)
@@ -519,12 +527,12 @@ def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
     if lazy_vals is not None:
         # namedtuple instances are tuples and so they are immutable.  We cannot
         # add an instance property _cache.  So we create one global _cache dict
-        # and one _del_hook_cache dict as a class properties for storing the
-        # lazy vals and the del-hooks and enable the del_hook-functionality
-        # by adding a __del__ attribute function wich calls the del-hook.
+        # and one _del_hook_cache dict as class properties for storing the lazy
+        # vals and the del-hooks and enable the del_hook-functionality by
+        # adding a __del__ attribute function wich calls the del-hook.
         _class._cache = {}
         _class._del_hook_cache = {}
-        _class.__del__ = lambda self: self._del_hook_cache[id(self)]()
+        _class.__del__ = lambda self: self._del_hook_cache[self]()
         for attr_name, func in lazy_vals.items():
             setattr(_class, attr_name,
                     lazy_val(func, with_del_hook=True))

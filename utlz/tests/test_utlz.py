@@ -3,6 +3,7 @@ from os.path import join, dirname
 from tempfile import NamedTemporaryFile
 
 import utlz
+from utlz import flo
 
 
 def test_flo():
@@ -94,29 +95,45 @@ def test_lazy_val():
 
     class TestClass:
 
-        baz = utlz.lazy_val(lambda self: 'baz ' + str(self.attr))
+        lazy1 = utlz.lazy_val(lambda self: 'baz ' + str(self.attr),
+                              with_del_hook=True)
 
         def __init__(self, arg):
             self.attr = arg
 
         @utlz.lazy_val
-        def double(self):
+        def lazy2(self):
             return func1(self)
 
         @utlz.lazy_val
-        def bar(self):
+        def lazy3(self):
             return 'foo ' + str(self.attr)
 
     inst1 = TestClass(111)
     assert func1.calls == 0
-    assert inst1.double == 222
+    assert inst1.lazy2 == 222
     assert func1.calls == 1
-    assert inst1.double == 222
+    assert inst1.lazy2 == 222
     assert func1.calls == 1, 'func1.calls is still 1'
-    assert inst1.bar == 'foo 111'
-    assert inst1.baz == 'baz 111'
+    assert inst1.lazy3 == 'foo 111'
+    assert inst1.lazy1 == 'baz 111'
     inst2 = TestClass(333)
-    assert inst2.baz == 'baz 333'
+    assert inst2.lazy1 == 'baz 333'
+
+    # test_lazy_val: del_hook()
+
+    for i in range(10):
+        instances = []
+        for j in range(10):
+            inst = TestClass(random.randint(0, 1000))
+            assert inst.lazy1 == flo('baz {inst.attr}')
+            assert inst.lazy2 == inst.attr * 2
+            assert inst.lazy3 == flo('foo {inst.attr}')
+            instances.append(inst)
+        for inst in instances:
+            assert inst.lazy1 == flo('baz {inst.attr}')
+            assert inst.lazy2 == inst.attr * 2
+            assert inst.lazy3 == flo('foo {inst.attr}')
 
 
 def test_namedtuple():
