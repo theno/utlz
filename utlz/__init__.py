@@ -536,9 +536,10 @@ def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
         # and one _del_hook_cache dict as class properties for storing the lazy
         # vals and the del-hooks and enable the del_hook-functionality by
         # adding a __del__ attribute function wich calls the del-hook.
+        def noop(): pass
         _class._cache = {}
         _class._del_hook_cache = {}
-        _class.__del__ = lambda self: self._del_hook_cache.get(id(self), lambda self: None)()
+        _class.__del__ = lambda self: self._del_hook_cache.get(id(self), noop)()
         for attr_name, func in lazy_vals.items():
             setattr(_class, attr_name,
                     lazy_val(func, with_del_hook=True))
