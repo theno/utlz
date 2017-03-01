@@ -206,13 +206,25 @@ def test_namedtuple_lazy_val():
             )
             assert tup.a + tail_a == tup.a_lazy
             assert tup.b + tail_b == tup.b_lazy
-            assert bytes(tup.c + tail_c, 'utf-8') == tup.c_lazy
-            assert hashlib.sha256(bytes(tup.d, 'utf-8')).digest() == tup.d_lazy
+            try:
+                assert bytes(tup.c + tail_c, 'utf-8') == tup.c_lazy
+                assert hashlib.sha256(bytes(tup.d,
+                                            'utf-8')).digest() == tup.d_lazy
+            except TypeError:
+                # python 2.x
+                # in python 2.x bytes == str, and accepts exactly one argument
+                pass
             assert [i+123 for i in tup.e] == tup.e_lazy
             tupels.append(tup)
         for tup in tupels:
             assert tup.a + tail_a == tup.a_lazy
             assert tup.b + tail_b == tup.b_lazy
-            assert bytes(tup.c + tail_c, 'utf-8') == tup.c_lazy
-            assert hashlib.sha256(bytes(tup.d, 'utf-8')).digest() == tup.d_lazy
+            try:
+                assert bytes(tup.c + tail_c, 'utf-8') == tup.c_lazy
+                assert hashlib.sha256(bytes(tup.d,
+                                            'utf-8')).digest() == tup.d_lazy
+            except TypeError:
+                # python 2.x
+                # in python 2.x bytes == str, and accepts exactly one argument
+                pass
             assert [i+123 for i in tup.e] == tup.e_lazy
