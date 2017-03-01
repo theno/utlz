@@ -481,7 +481,8 @@ def lazy_val(func, with_del_hook=False):
     def add_to_del_hook_cache(that):
         if with_del_hook:
             try:
-                that._del_hook_cache[id(that)] = hook_for(that)
+                if id(that) not in that._del_hook_cache:
+                    that._del_hook_cache[id(that)] = hook_for(that)
             except AttributeError:
                 # when that._del_hook_cache not exists, it means it is not a
                 # class property.  Then, we don't need a del_hook().
