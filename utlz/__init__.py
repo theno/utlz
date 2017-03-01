@@ -482,12 +482,6 @@ def lazy_val(func, with_del_hook=False):
         if with_del_hook:
             try:
                 that._del_hook_cache[id(that)] = hook_for(that)
-
-                # TODO DEBUG
-                id_that = id(that)
-                id_dhc = id(that._del_hook_cache)
-                print(flo('add {id_that} to del_hook_cache {id_dhc}'))
-
             except AttributeError:
                 # when that._del_hook_cache not exists, it means it is not a
                 # class property.  Then, we don't need a del_hook().
@@ -536,9 +530,9 @@ def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
         # and one _del_hook_cache dict as class properties for storing the lazy
         # vals and the del-hooks and enable the del_hook-functionality by
         # adding a __del__ attribute function wich calls the del-hook.
-        def noop(): pass
         _class._cache = {}
         _class._del_hook_cache = {}
+        def noop(): pass
         _class.__del__ = lambda self: self._del_hook_cache.get(id(self), noop)()
         for attr_name, func in lazy_vals.items():
             setattr(_class, attr_name,
