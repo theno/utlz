@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/theno/utlz.svg?branch=master)](https://travis-ci.org/theno/utlz)
+
 # utlz
 
 A Python utils library
