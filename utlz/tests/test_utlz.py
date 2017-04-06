@@ -1,3 +1,4 @@
+import hashlib
 import random
 from os.path import join, dirname
 from tempfile import NamedTemporaryFile
@@ -181,11 +182,16 @@ def test_namedtuple_lazy_val():
             'a',
             'b',
             'c',
+            'd',
+            'e',
         ],
         lazy_vals={
             'a_lazy': lambda self: self.a + tail_a,
             'b_lazy': lambda self: self.b + tail_b,
-            'c_lazy': lambda self: [self.c, tail_c],
+            'c_lazy': lambda self: bytes(self.c + tail_c, 'utf-8'),
+            'd_lazy': lambda self: hashlib.sha256(bytes(self.d,
+                                                        'utf-8')).digest(),
+            'e_lazy': lambda self: [i+123 for i in self.e],
         }
     )
     for i in range(10):
@@ -194,13 +200,31 @@ def test_namedtuple_lazy_val():
             tup = Tuple(
                 a=str(random.randint(0, 1000)),
                 b=str(random.randint(0, 1000)),
-                c=str(random.randint(0, 1000))
+                c=str(random.randint(0, 1000)),
+                d=str(random.randint(0, 1000)),
+                e=[1, 2, 3, random.randint(0, 1000)],
             )
             assert tup.a + tail_a == tup.a_lazy
             assert tup.b + tail_b == tup.b_lazy
-            assert [tup.c, tail_c] == tup.c_lazy
+            try:
+                assert bytes(tup.c + tail_c, 'utf-8') == tup.c_lazy
+                assert hashlib.sha256(bytes(tup.d,
+                                            'utf-8')).digest() == tup.d_lazy
+            except TypeError:
+                # python 2.x
+                # in python 2.x bytes == str, and accepts exactly one argument
+                pass
+            assert [i+123 for i in tup.e] == tup.e_lazy
             tupels.append(tup)
         for tup in tupels:
             assert tup.a + tail_a == tup.a_lazy
             assert tup.b + tail_b == tup.b_lazy
-            assert [tup.c, tail_c] == tup.c_lazy
+            try:
+                assert bytes(tup.c + tail_c, 'utf-8') == tup.c_lazy
+                assert hashlib.sha256(bytes(tup.d,
+                                            'utf-8')).digest() == tup.d_lazy
+            except TypeError:
+                # python 2.x
+                # in python 2.x bytes == str, and accepts exactly one argument
+                pass
+            assert [i+123 for i in tup.e] == tup.e_lazy

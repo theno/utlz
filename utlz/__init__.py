@@ -465,8 +465,8 @@ def lazy_val(func, with_del_hook=False):
             orig_del = None
 
         def del_hook(*args, **kwargs):
-            del that._cache[that]
-            del that._del_hook_cache[that]
+            del that._cache[id(that)]
+            del that._del_hook_cache[id(that)]
             if orig_del is not None:
                 orig_del(that, *args, **kwargs)
 
@@ -481,7 +481,7 @@ def lazy_val(func, with_del_hook=False):
     def add_to_del_hook_cache(that):
         if with_del_hook:
             try:
-                that._del_hook_cache[that] = hook_for(that)
+                that._del_hook_cache[id(that)] = hook_for(that)
             except AttributeError:
                 # when that._del_hook_cache not exists, it means it is not a
                 # class property.  Then, we don't need a del_hook().
@@ -490,17 +490,17 @@ def lazy_val(func, with_del_hook=False):
     @functools.wraps(func)
     def get(self):
         try:
-            return self._cache[self][func]
+            return self._cache[id(self)][func]
         except AttributeError:
-            self._cache = {self: {}, }
+            self._cache = {id(self): {}, }
             add_to_del_hook_cache(self)
         except KeyError:
             try:
-                self._cache[self]
+                self._cache[id(self)]
             except KeyError:
-                self._cache[self] = {}
+                self._cache[id(self)] = {}
                 add_to_del_hook_cache(self)
-        val = self._cache[self][func] = func(self)
+        val = self._cache[id(self)][func] = func(self)
         return val
 
     return property(get)
@@ -532,7 +532,8 @@ def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
         # adding a __del__ attribute function wich calls the del-hook.
         _class._cache = {}
         _class._del_hook_cache = {}
-        _class.__del__ = lambda self: self._del_hook_cache[self]()
+        def noop(): pass
+        _class.__del__ = lambda self: self._del_hook_cache.get(id(self), noop)()
         for attr_name, func in lazy_vals.items():
             setattr(_class, attr_name,
                     lazy_val(func, with_del_hook=True))
