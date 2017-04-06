@@ -185,7 +185,7 @@ def test_namedtuple_lazy_val():
         lazy_vals={
             'a_lazy': lambda self: self.a + tail_a,
             'b_lazy': lambda self: self.b + tail_b,
-            'c_lazy': lambda self: self.c + tail_c,
+            'c_lazy': lambda self: [self.c, tail_c],
         }
     )
     for i in range(10):
@@ -198,9 +198,9 @@ def test_namedtuple_lazy_val():
             )
             assert tup.a + tail_a == tup.a_lazy
             assert tup.b + tail_b == tup.b_lazy
-            assert tup.c + tail_c == tup.c_lazy
+            assert [tup.c, tail_c] == tup.c_lazy
             tupels.append(tup)
         for tup in tupels:
             assert tup.a + tail_a == tup.a_lazy
             assert tup.b + tail_b == tup.b_lazy
-            assert tup.c + tail_c == tup.c_lazy
+            assert [tup.c, tail_c] == tup.c_lazy
