@@ -1,10 +1,10 @@
-[![Build Status](https://travis-ci.org/theno/utlz.svg?branch=master)](https://travis-ci.org/theno/utlz)
-[![Supported Python Versions](https://img.shields.io/pypi/pyversions/utlz.svg)](https://pypi.python.org/pypi/utlz)
-[![PyPI Version](https://img.shields.io/pypi/v/utlz.svg)](https://pypi.python.org/pypi/utlz)
-
 # utlz
 
 A Python utils library
+
+[![Build Status](https://travis-ci.org/theno/utlz.svg?branch=master)](https://travis-ci.org/theno/utlz)
+[![Supported Python Versions](https://img.shields.io/pypi/pyversions/utlz.svg)](https://pypi.python.org/pypi/utlz)
+[![PyPI Version](https://img.shields.io/pypi/v/utlz.svg)](https://pypi.python.org/pypi/utlz)
 
 ## Installation
 
