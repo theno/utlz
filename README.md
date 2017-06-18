@@ -19,44 +19,82 @@ Clone the source code [repository](https://github.com/theno/utlz):
 
 ```bash
 git clone https://github.com/theno/utlz.git
+cd utlz
 ```
 
-Run unit tests with pytest
+### Fabfile
 
-```bash
-pip install --user  pytest
-PYTHONPATH=".:$PYTHONPATH"  python -m pytest
+The `fabfile.py` contains devel-tasks to be executed with
+[Fabric](http://www.fabfile.org/) (maybe you need to
+[install](http://www.fabfile.org/installing.html) it):
+
+```
+> fab -l
+
+Available commands:
+
+    clean    Delete temporary files not under version control.
+    pypi     Build package and upload to pypi.
+    pythons  Install latest pythons with pyenv.
+    test     Run unit tests.
+    tox      Run tox.
+
+# Show task details, e.g. for task `test`:
+> fab -d test
+
+Run unit tests.
+
+    Keyword-Args:
+        args: Optional arguments passed to pytest
+        py: python version to run the tests against
+
+    Example:
+
+        fab test:args=-s,py=py27
 ```
 
-Build package and run tests against several pythons with tox:
+At first, set up python versions with [pyenv](https://github.com/pyenv/pyenv)
+and virtualenvs for development with
+[tox](https://tox.readthedocs.io/en/latest/):
+```
+fab pythons
+fab tox
+```
+Tox creates virtualenvs of different Python versions (if they not exist
+already) and runs the unit tests against each virtualenv.
+
+On Ubuntu 16.04 you must install `libpython-dev` and `libpython3-dev` in order
+to make the tests passing for Python-2.7 and Python-3.5:
 
 ```bash
-# install tox
-pip install tox
+sudo apt-get install  libpython-dev  libpython3-dev
 
-# install and activate different python versions
-fab setup.pyenv -H localhost
-pyenv install  2.6.9  2.7.13  3.3.6  3.4.6  3.5.3  3.6.0
-pyenv local  system  2.6.9  2.7.13  3.3.6  3.4.6  3.5.3  3.6.0
-
-# build and run tests
-python -m tox
+# Then, rebuild the non-working Python-2.7 and Python-3.5 virtualenv and
+# run the unit tests:
+fab tox:'-e py27 -e py35 --recreate'
 ```
 
-Build and publish package:
+### Devel-Commands
+
+Run unit tests against several pythons with tox (needs pythons defined
+in envlist of `tox.ini` to be installed with pyenv):
+
 ```bash
-# install pypandoc and twine
-pip install  pypandoc  twine
+python3.6 -m tox
 
-# build package
-python setup.py sdist
+# only against one python version:
+python3.6 -m tox -e py27
 
-# upload to pypi.org
-twine  upload  dist/utlz-<VERSION>.tar.gz
+# rebuild virtual environments:
+python3.6 -m tox -r
+```
 
+Run unit tests with pytest (uses tox virtualenv, replace `py36` by e.g.
+`py27` where applicable):
 
-# useful oneliners
-rm -rf .tox/; python3.6 -m tox
-rm -rf dist/; python3.6 setup.py sdist; ls -hal dist/
-python3.6 -m twine  upload  dist/utlz*
+```bash
+PYTHONPATH='.' .tox/py36/bin/python -m pytest
+
+# show output
+PYTHONPATH='.' .tox/py36/bin/python -m pytest -s
 ```
