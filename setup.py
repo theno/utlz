@@ -43,7 +43,7 @@ with open(filename, 'rt') as fh:
 
 setup(
     name='utlz',
-    version='0.9.5',
+    version=version,
     description=description,
     long_description=long_description,
     url='https://github.com/theno/utlz',
