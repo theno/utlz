@@ -423,6 +423,11 @@ def write_json(data, filename):
         json.dump(obj=data, fp=fh, sort_keys=True)
 
 
+def create_dir_if_not_exists(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
 def flat_list(list_of_lists):
     '''Return a simple list out of a list of lists.'''
     return [item for sublist in list_of_lists for item in sublist]
