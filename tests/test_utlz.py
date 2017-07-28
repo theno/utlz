@@ -22,7 +22,7 @@ def test_flo():
 
 
 def test_load_json():
-    filename = join(dirname(__file__), 'test_data', 'data.json')
+    filename = join(dirname(__file__), 'data', 'test_load_json', 'data.json')
     data_is = utlz.load_json(filename)
     data_must = ['aa', {'a': {'k1': [1, 2, 3], 'k2': 'value'}, 'b': 'bbb'}, 333]
     assert data_is == data_must
