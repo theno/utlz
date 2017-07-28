@@ -10,6 +10,8 @@ import struct
 import time
 from functools import wraps
 
+from utlz._version import __version__
+
 
 # inspired by: http://stackoverflow.com/a/6618825
 def flo(string):

@@ -36,6 +36,11 @@ def create_readme_with_long_description():
 description = 'A python utils library'
 long_description = create_readme_with_long_description()
 
+this_dir = os.path.abspath(os.path.dirname(__file__))
+filename = os.path.join(this_dir, 'utlz', '_version.py')
+with open(filename, 'rt') as fh:
+    version = fh.read().split('"')[1]
+
 setup(
     name='utlz',
     version='0.9.5',
