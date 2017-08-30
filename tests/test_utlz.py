@@ -228,3 +228,19 @@ def test_namedtuple_lazy_val():
                 # in python 2.x bytes == str, and accepts exactly one argument
                 pass
             assert [i+123 for i in tup.e] == tup.e_lazy
+
+
+def test_query_yes_no():
+    utlz._get_input = lambda: 'yes'
+    assert utlz.query_yes_no(question='Is this true?', default='no') is True
+
+    utlz._get_input = lambda: 'no'
+    assert utlz.query_yes_no(question='Is this true?', default='no') is False
+
+
+def test_query_input():
+    utlz._get_input = lambda: 'foo'
+    assert utlz.query_input(question='Enter something') is 'foo'
+
+    utlz._get_input = lambda: 'bar'
+    assert utlz.query_input(question='Enter something') is 'bar'

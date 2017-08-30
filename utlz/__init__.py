@@ -207,10 +207,17 @@ def print_full_name(*args, **kwargs):
     return real_decorator
 
 
+def _get_input(text):
+    try:
+        return raw_input()  # Python-2.*
+    except NameError:
+        return input()  # Python-3.*
+
+
+
 # taken from: http://stackoverflow.com/a/3041990
-# TODO: unit tests
 def query_yes_no(question, default="yes"):
-    """Ask a yes/no question via raw_input() and return their answer.
+    """Ask a yes/no question and return their answer.
 
     "question" is a string that is presented to the user.
     "default" is the presumed answer if the user just hits <Enter>.
@@ -232,7 +239,7 @@ def query_yes_no(question, default="yes"):
 
     while True:
         sys.stdout.write(question + prompt)
-        choice = raw_input().lower()
+        choice = _get_input().lower()
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:
@@ -242,9 +249,8 @@ def query_yes_no(question, default="yes"):
                              "(or 'y' or 'n').\n")
 
 
-# TODO: unit tests
 def query_input(question, default=None, color=default_color):
-    """Ask a question for input via raw_input() and return their answer.
+    """Ask a question for input and return their answer.
 
     "question" is a string that is presented to the user.
     "default" is the presumed answer if the user just hits <Enter>.
@@ -260,7 +266,7 @@ def query_input(question, default=None, color=default_color):
 
     while True:
         sys.stdout.write(color(question + prompt))
-        choice = raw_input()
+        choice = _get_input()
         if default is not None and choice == '':
             return default
         if choice != '':
