@@ -450,8 +450,9 @@ def text_with_newlines(text, line_length=78, newline='\n'):
         if len(text) <= line_length:
             return text
         else:
-            return text[:line_length] + newline + \
-                   text_with_newlines(text[line_length:], line_length, newline)
+            return newline.join([text[idx:idx+line_length]
+                                 for idx
+                                 in range(0, len(text), line_length)])
     else:
         return text
 
