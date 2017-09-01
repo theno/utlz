@@ -235,7 +235,7 @@ def test_query_yes_no():
     assert utlz.query_yes_no(question='Is this true?', default='no') is True
 
     utlz._get_input = lambda: 'no'
-    assert utlz.query_yes_no(question='Is this true?', default='no') is False
+    assert utlz.query_yes_no('Is this true?', default='no') is False
 
 
 def test_query_input():
@@ -243,4 +243,4 @@ def test_query_input():
     assert utlz.query_input(question='Enter something') is 'foo'
 
     utlz._get_input = lambda: 'bar'
-    assert utlz.query_input(question='Enter something') is 'bar'
+    assert utlz.query_input('Enter something') is 'bar'

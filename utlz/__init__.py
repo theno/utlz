@@ -207,7 +207,7 @@ def print_full_name(*args, **kwargs):
     return real_decorator
 
 
-def _get_input(text):
+def _get_input():
     try:
         return raw_input()  # Python-2.*
     except NameError:
