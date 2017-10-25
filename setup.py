@@ -67,5 +67,4 @@ setup(
     ],
     keywords='python development utilities library',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    include_package_data=True,
 )
