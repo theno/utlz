@@ -20,7 +20,7 @@ def create_readme_with_long_description():
         shutil.copy(readme_md, readme)
     try:
         import pypandoc
-        long_description = pypandoc.convert(readme_md, 'rst')
+        long_description = pypandoc.convert(readme_md, 'rst', format='md')
         if os.path.islink(readme):
             os.remove(readme)
         with open(readme, 'w') as out:
@@ -32,6 +32,7 @@ def create_readme_with_long_description():
         with open(readme, encoding='utf-8') as in_:
             long_description = in_.read()
     return long_description
+
 
 description = 'A python utils library'
 long_description = create_readme_with_long_description()
@@ -66,4 +67,5 @@ setup(
     ],
     keywords='python development utilities library',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    include_package_data=True,
 )
