@@ -1,5 +1,7 @@
+import gzip
 import hashlib
 import random
+import sys
 from os.path import join, dirname
 from tempfile import NamedTemporaryFile
 
@@ -22,8 +24,15 @@ def test_flo():
 
 
 def test_load_json():
+    # normal mode
     filename = join(dirname(__file__), 'data', 'test_load_json', 'data.json')
     data_is = utlz.load_json(filename)
+    data_must = ['aa', {'a': {'k1': [1, 2, 3], 'k2': 'value'}, 'b': 'bbb'}, 333]
+    assert data_is == data_must
+
+    # gzip_mode
+    filename = join(dirname(__file__), 'data', 'test_load_json', 'data.json.gz')
+    data_is = utlz.load_json(filename, gzip_mode=True)
     data_must = ['aa', {'a': {'k1': [1, 2, 3], 'k2': 'value'}, 'b': 'bbb'}, 333]
     assert data_is == data_must
 
@@ -41,6 +50,8 @@ def test_write_json():
             '["aa", {"a": {"k1": [1, 2, 3], "k2": "val"}, "b": "bbb"}, 333]',
         ),
     ]
+
+    # normal mode
     for data_in, data_must, from_file_must in test_data:
         with NamedTemporaryFile() as tmpf:
             utlz.write_json(data_in, tmpf.name)
@@ -50,6 +61,19 @@ def test_write_json():
             from_file = tmpf.read().decode('utf-8')
             assert data_is == data_must
             assert from_file == from_file_must
+
+    # gzip mode
+    for data_in, data_must, from_file_must in test_data:
+        with NamedTemporaryFile() as tmpf:
+            utlz.write_json(data_in, tmpf.name, gzip_mode=True)
+            tmpf.seek(0)
+            data_is = utlz.load_json(tmpf.name, gzip_mode=True)
+            tmpf.seek(0)
+            assert data_is == data_must
+            # skip test on Python-2.x
+            if sys.version_info >= (3,0):
+                from_file = gzip.decompress(tmpf.read()).decode('utf-8')
+                assert from_file == from_file_must
 
 
 def test_flat_list():

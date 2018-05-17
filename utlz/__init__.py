@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import collections
 import functools
+import gzip
 import json
 import inspect
 import os.path
@@ -416,19 +417,42 @@ def convert_unicode_2_utf8(input):
         return input
 
 
-def load_json(filename):
+def load_json(filename, gzip_mode=False):
     '''Return the json-file data, with all strings utf-8 encoded.'''
-    data = None
-    with open(filename, 'r') as fh:
+
+    open_file = open
+    if gzip_mode:
+        open_file = gzip.open
+
+    try:
+        with open_file(filename, 'rt') as fh:
+            data = json.load(fh)
+            data = convert_unicode_2_utf8(data)
+            return data
+    except AttributeError:
+        # Python-2.6
+        fh = open_file(filename, 'rt')
         data = json.load(fh)
+        fh.close()
         data = convert_unicode_2_utf8(data)
-    return data
+        return data
 
 
-def write_json(data, filename):
+def write_json(data, filename, gzip_mode=False):
     '''Write the python data structure as a json-Object to filename.'''
-    with open(filename, 'w') as fh:
+
+    open_file = open
+    if gzip_mode:
+        open_file = gzip.open
+
+    try:
+        with open_file(filename, 'wt') as fh:
+            json.dump(obj=data, fp=fh, sort_keys=True)
+    except AttributeError:
+        # Python-2.6
+        fh = open_file(filename, 'wt')
         json.dump(obj=data, fp=fh, sort_keys=True)
+        fh.close()
 
 
 def create_dir_if_not_exists(path):
@@ -522,8 +546,10 @@ def lazy_val(func, with_del_hook=False):
 
 # namedtuple with defaults and lazy_vals
 def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
+
     if isinstance(field_names, str):
         field_names = field_names.replace(',', ' ').split()
+
     field_names = list(map(str, field_names))
     field_names_without_defaults = []
     defaults = []
@@ -535,9 +561,11 @@ def namedtuple(typename, field_names, lazy_vals=None, **kwargs):
         elif len(defaults) != 0:
             raise ValueError('non-keyword arg after keyword arg in field_names')
         field_names_without_defaults.append(name)
+
     _class = collections.namedtuple(typename, field_names_without_defaults,
                                     **kwargs)
     _class.__new__.__defaults__ = tuple(defaults)
+
     if lazy_vals is not None:
         # namedtuple instances are tuples and so they are immutable.  We cannot
         # add an instance property _cache.  So we create one global _cache dict
